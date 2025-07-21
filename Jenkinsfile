@@ -1,34 +1,78 @@
 pipeline {
+
     agent any
-
+ 
     environment {
-        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')         // Replace with your Jenkins credentials ID
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key') // Replace with your Jenkins credentials ID
+
         AWS_DEFAULT_REGION = 'ap-south-1'
-    }
 
+        STACK_NAME = 's3-bucket-stack'
+
+        TEMPLATE_PATH = "s3-bucket.yaml"
+
+    }
+ 
     stages {
-        stage('Download CloudFormation Template') {
-            steps {
-                script {
-                    sh 'curl -o jenkins-bucket.yml https://raw.githubusercontent.com/Sandhya-AR/jenkins-bucket-cloudformation-template/main/jenkins-bucket.yml'
-                }
-            }
-        }
 
+        stage('Clone Git Repo') {
+
+            steps {
+
+                git url: 'https://github.com/pfatima/cloudformation-template.git', branch: 'main'
+
+            }
+
+        }
+ 
         stage('Deploy CloudFormation Stack') {
-            steps {
-                script {
-                    sh '''
-                      aws cloudformation deploy \
-                      --template-file jenkins-bucket.yml \
-                      --stack-name my-s3-bucket-stack \
-                      --capabilities CAPABILITY_NAMED_IAM \
-                      --region ap-south-1
-                    '''
-                }
-            }
-        }
-    }
-}
 
+            steps {
+
+                script {
+
+                    if (!fileExists("${TEMPLATE_PATH}")) {
+
+                        error "CloudFormation template not found at: ${TEMPLATE_PATH}"
+
+                    }
+ 
+                    sh """
+
+                        aws cloudformation deploy \
+
+                          --template-file "${TEMPLATE_PATH}" \
+
+                          --stack-name "${STACK_NAME}" \
+
+                          --region "${AWS_DEFAULT_REGION}" \
+
+                          --capabilities CAPABILITY_NAMED_IAM
+
+                    """
+
+                }
+
+            }
+
+        }
+
+    }
+ 
+    post {
+
+        success {
+
+            echo "✅ CloudFormation stack deployed successfully."
+
+        }
+
+        failure {
+
+            echo "❌ CloudFormation stack deployment failed."
+
+        }
+
+    }
+
+}
+ 
