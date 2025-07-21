@@ -4,7 +4,7 @@ pipeline {
     parameters {
         string(name: 'STACK_NAME', defaultValue: 's3-stack-2', description: 'CloudFormation Stack Name')
         string(name: 'TEMPLATE_FILE', defaultValue: 'jenkins-bucket.yml', description: 'CloudFormation Template File')
-        string(name: 'BUCKET_NAME', defaultValue: 'another-bucket-2', description: 'S3 Bucket Name')
+        string(name: 'BUCKET_NAME', defaultValue: 'sandhya-bucket-2', description: 'S3 Bucket Name')
         choice(name: 'REGION', choices: ['us-east-1', 'us-west-1', 'ap-south-1'], description: 'AWS Region')
     }
 
