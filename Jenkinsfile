@@ -8,7 +8,7 @@ pipeline {
 
         STACK_NAME = 's3-bucket-stack'
 
-        TEMPLATE_PATH = "jenkins-bucket"
+        TEMPLATE_PATH = "jenkins-bucket.yml"
 
     }
  
