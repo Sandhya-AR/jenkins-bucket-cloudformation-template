@@ -25,38 +25,29 @@ pipeline {
         }
  
         stage('Deploy CloudFormation Stack') {
-
-            steps {
-
-                script {
-
-                    if (!fileExists("${TEMPLATE_PATH}")) {
-
-                        error "CloudFormation template not found at: ${TEMPLATE_PATH}"
-
-                    }
- 
-                    sh """
-
-                        aws cloudformation deploy \
-
-                          --template-file "${TEMPLATE_PATH}" \
-
-                          --stack-name "${STACK_NAME}" \
-
-                          --region "${AWS_DEFAULT_REGION}" \
-
-                          --capabilities CAPABILITY_NAMED_IAM
-
-                    """
-
-                }
-
+    steps {
+        script {
+            if (!fileExists("${TEMPLATE_PATH}")) {
+                error "CloudFormation template not found at: ${TEMPLATE_PATH}"
             }
 
+            withCredentials([usernamePassword(
+                credentialsId: 'aws-creds',
+                usernameVariable: 'AWS_ACCESS_KEY_ID',
+                passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+            )]) {
+                sh """
+                    aws cloudformation deploy \
+                    --template-file "$TEMPLATE_PATH" \
+                    --stack-name "$STACK_NAME" \
+                    --region "$AWS_DEFAULT_REGION" \
+                    --capabilities CAPABILITY_NAMED_IAM
+                """
+            }
         }
-
     }
+}
+
  
     post {
 
