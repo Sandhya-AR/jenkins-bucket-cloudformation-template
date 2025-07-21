@@ -1,51 +1,37 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'STACK_NAME', defaultValue: 's3-stack', description: 'CloudFormation Stack Name')
+        string(name: 'TEMPLATE_FILE', defaultValue: 'jenkins-bucket.yml', description: 'CloudFormation Template File')
+        string(name: 'BUCKET_NAME', defaultValue: 'my-bucket-from-jenkins', description: 'S3 Bucket Name')
+        choice(name: 'REGION', choices: ['us-east-1', 'us-west-1', 'ap-south-1'], description: 'AWS Region')
+    }
+
     environment {
-        AWS_DEFAULT_REGION = 'ap-south-1'
-        STACK_NAME = 's3-bucket-stack'
-        TEMPLATE_PATH = "jenkins-bucket.yml"
+        AWS_DEFAULT_REGION = "${params.REGION}"
     }
 
     stages {
-        stage('Clone Git Repo') {
+        stage('Checkout Repository') {
             steps {
-                git url: 'https://github.com/Sandhya-AR/jenkins-bucket-cloudformation-template.git', branch: 'main'
+                git branch: 'main', url: 'https://github.com/Sandhya-AR/jenkins-bucket-cloudformation-template.git'
             }
         }
 
-        stage('Deploy CloudFormation Stack') {
+        stage('Deploy S3 Stack') {
             steps {
                 script {
-                    if (!fileExists("${TEMPLATE_PATH}")) {
-                        error "CloudFormation template not found at: ${TEMPLATE_PATH}"
-                    }
-
-                    withCredentials([usernamePassword(
-                        credentialsId: 'aws-creds',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    )]) {
-                        sh """
-                            aws cloudformation deploy \
-                            --template-file "$TEMPLATE_PATH" \
-                            --stack-name "$STACK_NAME" \
-                            --region "$AWS_DEFAULT_REGION" \
-                            --capabilities CAPABILITY_NAMED_IAM
-                        """
-                    }
+                    echo "Running CloudFormation deployment for S3..."
+                    sh """
+                        aws cloudformation deploy \
+                          --stack-name ${params.STACK_NAME} \
+                          --template-file ${params.TEMPLATE_FILE} \
+                          --region ${params.REGION} \
+                          --parameter-overrides BucketName=${params.BUCKET_NAME}
+                    """
                 }
             }
         }
     }
-
-    post {
-        success {
-            echo "✅ CloudFormation stack deployed successfully."
-        }
-        failure {
-            echo "❌ CloudFormation stack deployment failed."
-        }
-    }
-}  // <--- Make sure this closing brace is here
-
+}
