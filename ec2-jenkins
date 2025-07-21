@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Checkout Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Sandhya-AR/jenkins-bucket-cloudformation-template.git'
+                git branch: 'main', url: 'https://github.com/riteshbehal/CloudFormation.git'
             }
         }
 
@@ -25,13 +25,14 @@ pipeline {
                     echo "Running CloudFormation deployment for EC2..."
                     sh """
                         aws cloudformation deploy \
-                          --stack-name ${params.STACK_NAME} \
-                          --template-file ${params.TEMPLATE_FILE} \
-                          --region ${params.REGION} \
-                          --parameter-overrides InstanceName=${params.INSTANCE_NAME}
+                          --stack-name "$STACK_NAME" \
+                          --template-file "$TEMPLATE_FILE" \
+                          --region "$REGION" \
+                          --parameter-overrides InstanceName="$INSTANCE_NAME"
                     """
                 }
             }
         }
     }
 }
+
