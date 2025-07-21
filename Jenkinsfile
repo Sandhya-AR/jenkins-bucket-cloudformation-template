@@ -8,7 +8,7 @@ pipeline {
 
         STACK_NAME = 's3-bucket-stack'
 
-        TEMPLATE_PATH = "s3-bucket.yaml"
+        TEMPLATE_PATH = "jenkins-bucket"
 
     }
  
@@ -18,7 +18,7 @@ pipeline {
 
             steps {
 
-                git url: 'https://github.com/pfatima/cloudformation-template.git', branch: 'main'
+                git url: 'https://github.com/Sandhya-AR/jenkins-bucket-cloudformation-template.git', branch: 'main'
 
             }
 
